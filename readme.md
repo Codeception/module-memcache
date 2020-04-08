@@ -1,6 +1,6 @@
 # Memcache module for Codeception
 
-[![Build Status](https://travis-ci.org/Codeception/module-memcache.svg?branch=master)](https://travis-ci.org/Codeception/module-memcache)
+![Build Status](https://github.com/odeception/module-memcache/workflows/CI/badge.svg)
 
 ## Installation
 
