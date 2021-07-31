@@ -1,6 +1,6 @@
 # Memcache module for Codeception
 
-![Build Status](https://github.com/odeception/module-memcache/workflows/CI/badge.svg)
+[![Build Status](https://github.com/Codeception/module-memcache/workflows/CI/badge.svg)](https://github.com/Codeception/module-memcache/actions)
 
 ## Installation
 
