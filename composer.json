@@ -2,7 +2,7 @@
     "name":"codeception/module-memcache",
     "description":"Memcache module for Codeception",
     "keywords":["codeception", "memcache"],
-    "homepage":"http://codeception.com/",
+    "homepage":"https://codeception.com/",
     "type":"library",
     "license":"MIT",
     "authors":[
@@ -12,8 +12,12 @@
     ],
     "minimum-stability": "RC",
     "require": {
-        "php": ">=5.6.0 <9.0",
+        "php": "^7.4 | ^8.0",
         "codeception/codeception": "^4.0"
+    },
+    "require-dev": {
+        "ext-memcache": "*",
+        "ext-memcached": "*"
     },
     "autoload":{
         "classmap": ["src/"]

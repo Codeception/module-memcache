@@ -1,9 +1,13 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Codeception\Module;
 
-use Codeception\Module as CodeceptionModule;
+use Codeception\Module;
 use Codeception\TestInterface;
 use Codeception\Exception\ModuleConfigException;
+use Memcached;
 
 /**
  * Connects to [memcached](http://www.memcached.org/) using either _Memcache_ or _Memcached_ extension.
@@ -37,15 +41,15 @@ use Codeception\Exception\ModuleConfigException;
  * * **memcache** - instance of _Memcache_ or _Memcached_ object
  *
  */
-class Memcache extends CodeceptionModule
+class Memcache extends Module
 {
     /**
-     * @var \Memcache|\Memcached
+     * @var \Memcache|Memcached
      */
     public $memcache = null;
 
     /**
-     * {@inheritdoc}
+     * @var array
      */
     protected $config = [
         'host' => 'localhost',
@@ -55,7 +59,6 @@ class Memcache extends CodeceptionModule
     /**
      * Code to run before each test.
      *
-     * @param TestInterface $test
      * @throws ModuleConfigException
      */
     public function _before(TestInterface $test)
@@ -64,7 +67,7 @@ class Memcache extends CodeceptionModule
             $this->memcache = new \Memcache;
             $this->memcache->connect($this->config['host'], $this->config['port']);
         } elseif (class_exists('\Memcached')) {
-            $this->memcache = new \Memcached;
+            $this->memcache = new Memcached;
             $this->memcache->addServer($this->config['host'], $this->config['port']);
         } else {
             throw new ModuleConfigException(__CLASS__, 'Memcache classes not loaded');
@@ -73,8 +76,6 @@ class Memcache extends CodeceptionModule
 
     /**
      * Code to run after each test.
-     *
-     * @param TestInterface $test
      */
     public function _after(TestInterface $test)
     {
@@ -83,13 +84,10 @@ class Memcache extends CodeceptionModule
         }
 
         $this->memcache->flush();
-        switch (get_class($this->memcache)) {
-            case 'Memcache':
-                $this->memcache->close();
-                break;
-            case 'Memcached':
-                $this->memcache->quit();
-                break;
+        if (get_class($this->memcache) == 'Memcache') {
+            $this->memcache->close();
+        } elseif (get_class($this->memcache) == 'Memcached') {
+            $this->memcache->quit();
         }
     }
 
@@ -101,10 +99,9 @@ class Memcache extends CodeceptionModule
      * ``` php
      * <?php
      * $users_count = $I->grabValueFromMemcached('users_count');
-     * ?>
      * ```
      *
-     * @param $key
+     * @param string|array $key
      * @return array|string
      */
     public function grabValueFromMemcached($key)
@@ -127,21 +124,20 @@ class Memcache extends CodeceptionModule
      *
      * // Checks a 'users_count' exists and has the value 200
      * $I->seeInMemcached('users_count', 200);
-     * ?>
      * ```
      *
-     * @param $key
-     * @param $value
+     * @param string|array $key
+     * @param mixed $value
      */
-    public function seeInMemcached($key, $value = null)
+    public function seeInMemcached($key, $value = null): void
     {
         $actual = $this->memcache->get($key);
         $this->debugSection("Value", $actual);
 
         if (null === $value) {
-            $this->assertNotFalse($actual, "Cannot find key '$key' in Memcached");
+            $this->assertNotFalse($actual, "Cannot find key '{$key}' in Memcached");
         } else {
-            $this->assertEquals($value, $actual, "Cannot find key '$key' in Memcached with the provided value");
+            $this->assertEquals($value, $actual, "Cannot find key '{$key}' in Memcached with the provided value");
         }
     }
 
@@ -157,49 +153,41 @@ class Memcache extends CodeceptionModule
      *
      * // Checks a 'users_count' exists does not exist or its value is not the one provided
      * $I->dontSeeInMemcached('users_count', 200);
-     * ?>
      * ```
      *
-     * @param $key
-     * @param $value
+     * @param string|array $key
+     * @param mixed $value
      */
-    public function dontSeeInMemcached($key, $value = null)
+    public function dontSeeInMemcached($key, $value = null): void
     {
         $actual = $this->memcache->get($key);
         $this->debugSection("Value", $actual);
 
         if (null === $value) {
-            $this->assertFalse($actual, "The key '$key' exists in Memcached");
-        } else {
-            if (false !== $actual) {
-                $this->assertEquals($value, $actual, "The key '$key' exists in Memcached with the provided value");
-            }
+            $this->assertFalse($actual, "The key '{$key}' exists in Memcached");
+        } elseif (false !== $actual) {
+            $this->assertEquals($value, $actual, "The key '{$key}' exists in Memcached with the provided value");
         }
     }
 
     /**
      * Stores an item `$value` with `$key` on the Memcached server.
      *
-     * @param string $key
      * @param mixed $value
-     * @param int $expiration
      */
-    public function haveInMemcached($key, $value, $expiration = null)
+    public function haveInMemcached(string $key, $value, int $expiration = null): void
     {
-        switch (get_class($this->memcache)) {
-            case 'Memcache':
-                $this->assertTrue($this->memcache->set($key, $value, null, $expiration));
-                break;
-            case 'Memcached':
-                $this->assertTrue($this->memcache->set($key, $value, $expiration));
-                break;
+        if (get_class($this->memcache) == 'Memcache') {
+            $this->assertTrue($this->memcache->set($key, $value, null, $expiration));
+        } elseif (get_class($this->memcache) == 'Memcached') {
+            $this->assertTrue($this->memcache->set($key, $value, $expiration));
         }
     }
 
     /**
      * Flushes all Memcached data.
      */
-    public function clearMemcache()
+    public function clearMemcache(): void
     {
         $this->memcache->flush();
     }
