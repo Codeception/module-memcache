@@ -42,15 +42,9 @@ use Memcached;
  */
 class Memcache extends Module
 {
-    /**
-     * @var \Memcache|Memcached|null
-     */
-    public $memcache = null;
+    public \Memcache|Memcached|null $memcache = null;
 
-    /**
-     * @var array<string, string|integer>
-     */
-    protected $config = [
+    protected array $config = [
         'host' => 'localhost',
         'port' => 11211
     ];
