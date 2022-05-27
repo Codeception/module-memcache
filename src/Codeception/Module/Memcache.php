@@ -42,15 +42,12 @@ use Memcached;
  */
 class Memcache extends Module
 {
-    /**
-     * @var \Memcache|Memcached|null
-     */
-    public $memcache = null;
+    public \Memcache|Memcached|null $memcache = null;
 
     /**
      * @var array<string, string|integer>
      */
-    protected $config = [
+    protected array $config = [
         'host' => 'localhost',
         'port' => 11211
     ];
@@ -99,10 +96,8 @@ class Memcache extends Module
      * <?php
      * $users_count = $I->grabValueFromMemcached('users_count');
      * ```
-     *
-     * @return mixed
      */
-    public function grabValueFromMemcached(string $key)
+    public function grabValueFromMemcached(string $key): mixed
     {
         $value = $this->memcache->get($key);
         $this->debugSection("Value", $value);
@@ -123,10 +118,8 @@ class Memcache extends Module
      * // Checks a 'users_count' exists and has the value 200
      * $I->seeInMemcached('users_count', 200);
      * ```
-     *
-     * @param mixed $value
      */
-    public function seeInMemcached(string $key, $value = null): void
+    public function seeInMemcached(string $key, mixed $value = null): void
     {
         $actual = $this->memcache->get($key);
         $this->debugSection("Value", $actual);
@@ -151,10 +144,8 @@ class Memcache extends Module
      * // Checks a 'users_count' exists does not exist or its value is not the one provided
      * $I->dontSeeInMemcached('users_count', 200);
      * ```
-     *
-     * @param mixed $value
      */
-    public function dontSeeInMemcached(string $key, $value = null): void
+    public function dontSeeInMemcached(string $key, mixed $value = null): void
     {
         $actual = $this->memcache->get($key);
         $this->debugSection("Value", $actual);
@@ -168,10 +159,8 @@ class Memcache extends Module
 
     /**
      * Stores an item `$value` with `$key` on the Memcached server.
-     *
-     * @param mixed $value
      */
-    public function haveInMemcached(string $key, $value, int $expiration = 0): void
+    public function haveInMemcached(string $key, mixed $value, int $expiration = 0): void
     {
         if (get_class($this->memcache) == 'Memcache') {
             $this->assertTrue($this->memcache->set($key, $value, 0, $expiration));
