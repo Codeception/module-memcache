@@ -39,17 +39,16 @@ use Memcached;
  * ## Public Properties
  *
  * * **memcache** - instance of _Memcache_ or _Memcached_ object
- *
  */
 class Memcache extends Module
 {
     /**
-     * @var \Memcache|Memcached
+     * @var \Memcache|Memcached|null
      */
     public $memcache = null;
 
     /**
-     * @var array
+     * @var array<string, string|integer>
      */
     protected $config = [
         'host' => 'localhost',
@@ -61,7 +60,7 @@ class Memcache extends Module
      *
      * @throws ModuleConfigException
      */
-    public function _before(TestInterface $test)
+    public function _before(TestInterface $test): void
     {
         if (class_exists('\Memcache')) {
             $this->memcache = new \Memcache;
@@ -77,7 +76,7 @@ class Memcache extends Module
     /**
      * Code to run after each test.
      */
-    public function _after(TestInterface $test)
+    public function _after(TestInterface $test): void
     {
         if (empty($this->memcache)) {
             return;
@@ -101,10 +100,9 @@ class Memcache extends Module
      * $users_count = $I->grabValueFromMemcached('users_count');
      * ```
      *
-     * @param string|array $key
-     * @return array|string
+     * @return mixed
      */
-    public function grabValueFromMemcached($key)
+    public function grabValueFromMemcached(string $key)
     {
         $value = $this->memcache->get($key);
         $this->debugSection("Value", $value);
@@ -126,10 +124,9 @@ class Memcache extends Module
      * $I->seeInMemcached('users_count', 200);
      * ```
      *
-     * @param string|array $key
      * @param mixed $value
      */
-    public function seeInMemcached($key, $value = null): void
+    public function seeInMemcached(string $key, $value = null): void
     {
         $actual = $this->memcache->get($key);
         $this->debugSection("Value", $actual);
@@ -155,10 +152,9 @@ class Memcache extends Module
      * $I->dontSeeInMemcached('users_count', 200);
      * ```
      *
-     * @param string|array $key
      * @param mixed $value
      */
-    public function dontSeeInMemcached($key, $value = null): void
+    public function dontSeeInMemcached(string $key, $value = null): void
     {
         $actual = $this->memcache->get($key);
         $this->debugSection("Value", $actual);
@@ -175,10 +171,10 @@ class Memcache extends Module
      *
      * @param mixed $value
      */
-    public function haveInMemcached(string $key, $value, int $expiration = null): void
+    public function haveInMemcached(string $key, $value, int $expiration = 0): void
     {
         if (get_class($this->memcache) == 'Memcache') {
-            $this->assertTrue($this->memcache->set($key, $value, null, $expiration));
+            $this->assertTrue($this->memcache->set($key, $value, 0, $expiration));
         } elseif (get_class($this->memcache) == 'Memcached') {
             $this->assertTrue($this->memcache->set($key, $value, $expiration));
         }
